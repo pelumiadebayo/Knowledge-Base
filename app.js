@@ -5,10 +5,10 @@ const bodyParser = require('body-parser');
 const expressValidator = require('express-validator');
 const session = require('express-session');
 const flash = require('connect-flash');
-const expressMessages = require('express-messages');
 mongoose.connect('mongodb://localhost:27017/nodekb', { useNewUrlParser: true });
 db = mongoose.connection;
 const app = express();
+
 
 //checking for db's connection
 db.once('open', () => {
@@ -19,7 +19,7 @@ db.once('open', () => {
 db.on('error', (err) => {
     console.log(err);
 });
-
+app.use(expressValidator());
 //setting up view engine directories
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -59,9 +59,9 @@ app.use(session({
 }))
 
 //express message middleware
-app.use(flash());
+app.use(require('connect-flash')());
 app.use(function (req, res, next) {
-    res.locals.messages = expressMessages(req, res);
+    res.locals.messages = require('express-messages')(req, res);
     next();
 });
 
@@ -121,7 +121,8 @@ app.post('/article/add', (req, res) => {
         if (err) {
             console.log(err);
         } else {
-            req.flash("success", "Article Added")
+            req.flash('success', 'Article Added');
+            // res.send(article);
             res.redirect('/');
         }
     })
@@ -159,3 +160,5 @@ app.delete('/article/:id', (req, res) => {
 app.listen(3000, () => {
     console.log('runnig on port 3000');
 })
+
+module.exports = app;
